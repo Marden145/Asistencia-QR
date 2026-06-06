@@ -38,7 +38,9 @@ model Asistencia {
   fecha     DateTime @default(now())
   semana    Int
   año       Int
+  dia       Int
   estado    Estado   
+  @@unique([personaId, dia, semana, año])
 }
 
 enum Estado {

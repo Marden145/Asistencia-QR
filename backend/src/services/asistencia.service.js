@@ -33,12 +33,14 @@ const asistenciaService = {
     const hoy    = new Date();
     const semana = getWeek(hoy,   { weekStartsOn: 1 }); // semana empieza el lunes
     const año    = getYear(hoy);
+    const dia    = hoy.getDate();
 
     // Registrar asistencia
     const asistencia = await asistenciaRepository.create({
       personaId: persona.id,
       semana,
       año,
+      dia,
       estado: 'PRESENTE'
     });
 

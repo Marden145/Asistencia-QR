@@ -44,6 +44,9 @@ const sesionService = {
     // Marca como AUSENTE a quien no escaneó
     const ausentes = todasPersonas.filter(p => !genteProcesadaHoy.has(p.id));
 
+    const hoy = new Date();
+    const dia = hoy.getDate();
+
     if (ausentes.length > 0) {
       await Promise.all(
         ausentes.map(persona =>
@@ -51,6 +54,7 @@ const sesionService = {
             personaId: persona.id,
             semana:    sesion.semana,
             año:       sesion.año,
+            dia,
             estado:    'AUSENTE'
           })
         )

@@ -4,17 +4,17 @@ import { motion, AnimatePresence }     from 'framer-motion';
 import asistenciaService               from '../../services/asistencia.service';
 
 const QRScanner = () => {
-  const [resultado,   setResultado]   = useState(null);
-  const [error,       setError]       = useState(null);
-  const [escaneando,  setEscaneando]  = useState(false);
-  const [camaras,     setCamaras]     = useState([]);
-  const [camaraId,    setCamaraId]    = useState(null);
-  const [activo,      setActivo]      = useState(false);
+  const [resultado,  setResultado]  = useState(null);
+  const [error,      setError]      = useState(null);
+  const [escaneando, setEscaneando] = useState(false);
+  const [camaras,    setCamaras]    = useState([]);
+  const [camaraId,   setCamaraId]   = useState(null);
+  const [activo,     setActivo]     = useState(false);
 
-  const scannerRef   = useRef(null);
-  const iniciandoRef = useRef(false);
+  const scannerRef    = useRef(null);
+  const iniciandoRef  = useRef(false);
+  const procesandoRef = useRef(false); // ← lock anti-duplicados
 
-  // Obtener lista de cámaras disponibles al montar
   useEffect(() => {
     Html5Qrcode.getCameras()
       .then(devices => {
@@ -26,11 +26,8 @@ const QRScanner = () => {
       .catch(() => {});
   }, []);
 
-  // Iniciar scanner cuando ya tenemos la cámara seleccionada
   useEffect(() => {
     if (!camaraId) return;
-
-    // Evita doble inicialización — problema de StrictMode en desarrollo
     if (iniciandoRef.current) return;
     iniciandoRef.current = true;
 
@@ -41,8 +38,11 @@ const QRScanner = () => {
       camaraId,
       { fps: 10, qrbox: { width: 220, height: 220 } },
 
-      // onSuccess — cuando lee un QR
       async (codigoQR) => {
+        // Lock síncrono — bloquea todos los frames siguientes
+        if (procesandoRef.current) return;
+        procesandoRef.current = true;
+
         setEscaneando(true);
         setError(null);
 
@@ -56,39 +56,37 @@ const QRScanner = () => {
           setTimeout(() => {
             setResultado(null);
             setError(null);
+            procesandoRef.current = false; // libera el lock
           }, 3500);
         }
       },
 
-      // onError — frames sin QR, normal e ignorable
       () => {}
     )
     .then(() => setActivo(true))
-    .catch(() => {
-      iniciandoRef.current = false;
-    });
+    .catch(() => { iniciandoRef.current = false; });
 
-    // Cleanup — se ejecuta al desmontar o al cambiar camaraId
     return () => {
-      iniciandoRef.current = false;
+      iniciandoRef.current  = false;
+      procesandoRef.current = false; // limpia el lock al desmontar
       setActivo(false);
 
       if (scannerRef.current) {
         scannerRef.current
           .stop()
-          .then(() => scannerRef.current.clear())
+          .then(() => scannerRef.current?.clear())
           .catch(() => {});
         scannerRef.current = null;
       }
     };
   }, [camaraId]);
 
-  // Cambiar cámara — detiene la actual y arranca la nueva
   const cambiarCamara = async (nuevoCamaraId) => {
     if (!scannerRef.current) return;
 
     setActivo(false);
-    iniciandoRef.current = false;
+    iniciandoRef.current  = false;
+    procesandoRef.current = false; // resetea lock al cambiar cámara
 
     try {
       await scannerRef.current.stop();
@@ -99,12 +97,12 @@ const QRScanner = () => {
     setCamaraId(nuevoCamaraId);
   };
 
+  // El return es exactamente igual — no cambia nada visual
   return (
     <div
       className="min-h-screen p-8 flex flex-col items-center"
       style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)' }}
     >
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -119,7 +117,6 @@ const QRScanner = () => {
         </p>
       </motion.div>
 
-      {/* Card del scanner */}
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -131,7 +128,6 @@ const QRScanner = () => {
           backdropFilter: 'blur(24px)'
         }}
       >
-        {/* Barra de estado */}
         <div
           className="px-6 pt-5 pb-4 flex items-center justify-between"
           style={{ borderBottom: '0.5px solid rgba(147,197,253,0.08)' }}
@@ -147,7 +143,6 @@ const QRScanner = () => {
               {escaneando ? 'Procesando...' : activo ? 'Cámara activa' : 'Iniciando...'}
             </span>
           </div>
-
           <span
             className="text-xs px-2.5 py-1 rounded-lg font-mono"
             style={{
@@ -160,7 +155,6 @@ const QRScanner = () => {
           </span>
         </div>
 
-        {/* Área de la cámara — un solo div, sin duplicados */}
         <div className="px-6 pt-6">
           <div
             id="qr-reader"
@@ -169,7 +163,6 @@ const QRScanner = () => {
           />
         </div>
 
-        {/* Selector de cámara — diseño integrado */}
         {camaras.length > 1 && (
           <div className="px-6 pt-4">
             <div
@@ -179,24 +172,15 @@ const QRScanner = () => {
                 border: '0.5px solid rgba(147,197,253,0.1)'
               }}
             >
-              {/* Icono cámara */}
-              <svg
-                width="14" height="14" viewBox="0 0 24 24"
+              <svg width="14" height="14" viewBox="0 0 24 24"
                 fill="none" stroke="rgba(147,197,253,0.45)" strokeWidth="1.8"
-                className="flex-shrink-0"
-              >
+                className="flex-shrink-0">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                 <circle cx="12" cy="13" r="4"/>
               </svg>
-
-              <span
-                className="text-xs flex-shrink-0"
-                style={{ color: 'rgba(147,197,253,0.4)' }}
-              >
+              <span className="text-xs flex-shrink-0" style={{ color: 'rgba(147,197,253,0.4)' }}>
                 Cámara
               </span>
-
-              {/* Select estilizado */}
               <div className="relative flex-1">
                 <select
                   value={camaraId || ''}
@@ -205,22 +189,15 @@ const QRScanner = () => {
                   style={{ color: '#93c5fd' }}
                 >
                   {camaras.map(cam => (
-                    <option
-                      key={cam.id}
-                      value={cam.id}
-                      style={{ background: '#0f172a', color: '#93c5fd' }}
-                    >
+                    <option key={cam.id} value={cam.id}
+                      style={{ background: '#0f172a', color: '#93c5fd' }}>
                       {cam.label || `Cámara ${cam.id.substring(0, 8)}`}
                     </option>
                   ))}
                 </select>
-
-                {/* Flecha del select */}
-                <svg
-                  width="10" height="10" viewBox="0 0 24 24"
-                  fill="none" stroke="rgba(147,197,253,0.4)" strokeWidth="2.5"
-                  className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"
-                >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                  stroke="rgba(147,197,253,0.4)" strokeWidth="2.5"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none">
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
               </div>
@@ -228,7 +205,6 @@ const QRScanner = () => {
           </div>
         )}
 
-        {/* Feedback */}
         <div className="px-6 py-5">
           <AnimatePresence mode="wait">
             {escaneando && (
@@ -269,10 +245,8 @@ const QRScanner = () => {
                   border: '0.5px solid rgba(34,197,94,0.2)'
                 }}
               >
-                <div
-                  className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: 'rgba(34,197,94,0.15)' }}
-                >
+                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ background: 'rgba(34,197,94,0.15)' }}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
                     stroke="#22c55e" strokeWidth="3">
                     <polyline points="20 6 9 17 4 12"/>
@@ -302,10 +276,8 @@ const QRScanner = () => {
                   border: '0.5px solid rgba(239,68,68,0.2)'
                 }}
               >
-                <div
-                  className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: 'rgba(239,68,68,0.12)' }}
-                >
+                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ background: 'rgba(239,68,68,0.12)' }}>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
                     stroke="#ef4444" strokeWidth="3">
                     <line x1="18" y1="6" x2="6" y2="18"/>
@@ -326,7 +298,6 @@ const QRScanner = () => {
         </div>
       </motion.div>
 
-      {/* Instrucciones */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -335,7 +306,7 @@ const QRScanner = () => {
       >
         {[
           { icon: '📱', text: 'Sostén el QR frente a la cámara' },
-          { icon: '⚡', text: 'El registro es automático'       },
+          { icon: '⚡', text: 'El registro es automático' },
         ].map((item, i) => (
           <div key={i} className="flex items-center gap-2">
             <span className="text-base">{item.icon}</span>
