@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role    
+  createdAt DateTime @default(now())
+}
+model Persona {
+  id          String  @id @default(uuid())
+  nombre      String
+  apellido    String
+  email       String?      @unique
+  telefono    String?
+  codigoQR    String       @unique
+  activo      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  asistencias Asistencia[]
+  pagos Pago[]
+}
+
+model Asistencia {
+  id        String   @id @default(uuid())
+  personaId String
+  persona   Persona  @relation(fields: [personaId], references: [id])
+  fecha     DateTime @default(now())
+  semana    Int
+  año       Int
+  estado    Estado   
+}
+
+enum Estado {
+  PRESENTE
+  AUSENTE
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+model Sesion {
+  id        String   @id @default(uuid())
+  fecha     DateTime @default(now())
+  semana    Int
+  año       Int
+  abierta   Boolean  @default(true)
+  creadaAt  DateTime @default(now())
+  cerradaAt DateTime?
+}
+model Producto {
+  id          String   @id @default(uuid())
+  nombre      String
+  descripcion String
+  cantidad    Int
+  precio      Float
+  activo      Boolean  @default(true)
+  creadoAt    DateTime @default(now())
+  actualizadoAt DateTime @updatedAt
+  movimientos   MovimientoInventario[]
+}
+model MovimientoInventario {
+  id            String   @id @default(uuid())
+  productoId    String
+  cantidad      Int
+  tipo          String   // 'INGRESO' o 'EGRESO'
+  fecha         DateTime 
+  stockAnterior Int
+  stockNuevo    Int
+  producto      Producto @relation(fields: [productoId], references: [id])
+}
+model Pago {
+  id         String   @id @default(uuid())
+  personaId  String
+  persona    Persona  @relation(fields: [personaId], references: [id])
+  mes        Int      // 1-12
+  año        Int
+  semana1    Float    @default(0)
+  semana2    Float    @default(0)
+  semana3    Float    @default(0)
+  semana4    Float    @default(0)
+  total      Float    @default(0)
+  notas      String?
+  creadoAt   DateTime @default(now())
+  actualizadoAt DateTime @updatedAt
+
+  @@unique([personaId, mes, año]) // una fila por persona por mes/año
+}
