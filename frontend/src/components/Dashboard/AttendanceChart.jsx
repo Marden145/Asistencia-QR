@@ -40,10 +40,10 @@ const AttendanceChart = ({ data }) => {
     >
       <div className="mb-6">
         <h3 className="text-sm font-medium" style={{ color: '#e0f2fe' }}>
-          Asistencia por día
+          Asistencia 
         </h3>
         <p className="text-xs mt-0.5" style={{ color: 'rgba(147,197,253,0.4)' }}>
-          Presentes y ausentes por día de la semana
+          Presentes y ausentes dia Martes
         </p>
       </div>
 

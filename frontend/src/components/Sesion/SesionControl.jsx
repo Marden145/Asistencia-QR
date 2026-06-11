@@ -11,6 +11,7 @@ const SesionControl = ({ onSesionCambia }) => {
     try {
       const data = await sesionService.getEstado();
       setSesionAbierta(data.sesionAbierta);
+      onSesionCambia?.(data.sesionAbierta);
     } catch {}
   }, []);
 

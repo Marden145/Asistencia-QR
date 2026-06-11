@@ -39,6 +39,25 @@ const Asistencia = () => {
     if (semana === 52) { setSemana(1); setAño(a => a + 1); }
     else setSemana(s => s + 1);
   };
+    // 🌟 ESTADOS DE PAGINACIÓN
+  const [paginaActual, setPaginaActual] = useState(1);
+  const filasPorPagina = 25; // Cambia este número para mostrar más o menos filas por página
+
+  // 🌟 LÓGICA DE PROCESAMIENTO
+  const totalPaginas = Math.ceil(tabla.length / filasPorPagina);
+  
+  // Obtener el índice inicial y final de las personas de la página activa
+  const indiceInicial = (paginaActual - 1) * filasPorPagina;
+  const tablaPaginadas = tabla.slice(indiceInicial, indiceInicial + filasPorPagina);
+
+  // Manejadores de navegación seguros
+  const paginaAnterior = () => {
+    if (paginaActual > 1) setPaginaActual(p => p - 1);
+  };
+
+  const paginaSiguiente = () => {
+    if (paginaActual < totalPaginas) setPaginaActual(p => p + 1);
+  };
 
   // Celda de cada día — tres estados posibles
   // Modifica tu componente CeldaDia en el Frontend:
@@ -195,7 +214,7 @@ const CeldaDia = ({ registros }) => {
         <div
           className="grid px-6 py-4"
           style={{
-            gridTemplateColumns: '2fr repeat(5, 1fr) auto',
+            gridTemplateColumns: '2fr 1.5fr 1.2fr 1fr 1.5fr',
             borderBottom: '0.5px solid rgba(147,197,253,0.08)',
             background: 'rgba(0,0,0,0.15)'
           }}
@@ -204,133 +223,188 @@ const CeldaDia = ({ registros }) => {
             style={{ color: 'rgba(147,197,253,0.4)' }}>
             Persona
           </span>
-          {DIAS_LABEL.map(dia => (
-            <span key={dia}
-              className="text-xs font-medium tracking-widest uppercase text-center"
-              style={{ color: 'rgba(147,197,253,0.4)' }}>
-              {dia}
-            </span>
-          ))}
           <span className="text-xs font-medium tracking-widest uppercase text-center"
-            style={{ color: 'rgba(147,197,253,0.4)', minWidth: '64px' }}>
-            Total
+            style={{ color: 'rgba(147,197,253,0.4)' }}>
+            Asistencia (Martes)
+          </span>
+          <span className="text-xs font-medium tracking-widest uppercase text-center"
+            style={{ color: 'rgba(147,197,253,0.4)' }}>
+            Monto Semana
+          </span>
+          <span className="text-xs font-medium tracking-widest uppercase text-center"
+            style={{ color: 'rgba(147,197,253,0.4)' }}>
+            N° Recibo
+          </span>
+          <span className="text-xs font-medium tracking-widest uppercase text-center"
+            style={{ color: 'rgba(147,197,253,0.4)' }}>
+            Estado Semanal
           </span>
         </div>
 
         {/* Filas */}
-<AnimatePresence>
-  {tabla.length === 0 ? (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="flex flex-col items-center justify-center py-16 gap-3"
-    >
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
-        stroke="rgba(147,197,253,0.2)" strokeWidth="1.2">
-        <rect x="3" y="4" width="18" height="18" rx="2"/>
-        <path d="M16 2v4M8 2v4M3 10h18"/>
-      </svg>
-      <p className="text-sm" style={{ color: 'rgba(147,197,253,0.3)' }}>
-        No hay sesiones registradas esta semana
-      </p>
-      <p className="text-xs" style={{ color: 'rgba(147,197,253,0.2)' }}>
-        Abre una sesión desde la página de Escanear
-      </p>
-    </motion.div>
-  ) : (
-    tabla.map(({ persona, dias }, i) => {
-      // 1. Contamos cuántas asistencias individuales marcadas como 'PRESENTE' hay en toda la semana
-      const totalPresentes = DIAS.reduce((acumulador, dia) => {
-        const presentesDelDia = dias[dia]?.filter(reg => reg.estado === 'PRESENTE').length || 0;
-        return acumulador + presentesDelDia;
-      }, 0);
+        <AnimatePresence>
+          {tabla.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-16 gap-3"
+            >
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+                stroke="rgba(147,197,253,0.2)" strokeWidth="1.2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18"/>
+              </svg>
+              <p className="text-sm" style={{ color: 'rgba(147,197,253,0.3)' }}>
+                No hay sesiones registradas esta semana
+              </p>
+            </motion.div>
+          ) : (
+            tablaPaginadas.map(({ persona, asistencia, reporteFinanciero }, i) => {
+              // Extraemos el registro de asistencia del martes
+              const registroMartes = asistencia?.martes?.[0];
+              
+              // Variable de control para saber si no hay data de asistencia
+              const sinRegistro = !registroMartes;
+              
+              // Forzamos el estado a AUSENTE si no viene ningún registro
+              const estadoAsistencia = sinRegistro ? 'AUSENTE' : registroMartes.estado;
 
-      // 2. Contamos el total real de sesiones que se abrieron en la semana para esa persona
-      const totalSesiones = DIAS.reduce((acumulador, dia) => {
-        return acumulador + (dias[dia]?.length || 0);
-      }, 0);
+              // Lógica de validación financiera basada en tus especificaciones
+              const montoValido = sinRegistro ? 0 : (reporteFinanciero?.monto || 0);
+              const reciboValido = sinRegistro ? '—' : (reporteFinanciero?.recibo || '—');
+              
+              // Si no hay registro de asistencia, el estado financiero pasa forzado a PENDIENTE
+              const estadoFinanciero = sinRegistro ? 'PENDIENTE' : (reporteFinanciero?.estado || 'PENDIENTE');
 
-      // Color del badge según porcentaje de asistencia
-      const porcentaje = totalSesiones > 0
-        ? (totalPresentes / totalSesiones) * 100
-        : 0;
+              // Estilos dinámicos y estilizados para los estados financieros (Estética Neón Suave)
+              const financialBadgeStyle = estadoFinanciero === 'CANCELADO'
+                ? { bg: 'rgba(34,197,94,0.08)', color: '#4ade80', border: 'rgba(34,197,94,0.25)' }
+                : { bg: 'rgba(239,68,68,0.06)', color: '#f87171', border: 'rgba(239,68,68,0.2)' };
 
-      const badgeStyle = porcentaje === 100
-        ? { bg: 'rgba(34,197,94,0.1)',   color: '#86efac',  border: 'rgba(34,197,94,0.2)'  }
-        : porcentaje >= 60
-        ? { bg: 'rgba(251,191,36,0.1)',  color: '#fcd34d',  border: 'rgba(251,191,36,0.2)' }
-        : { bg: 'rgba(239,68,68,0.08)',  color: '#fca5a5',  border: 'rgba(239,68,68,0.15)' };
+                
 
-      return (
-        <motion.div
-          key={persona.id}
-          initial={{ opacity: 0, x: -8 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: i * 0.05, duration: 0.3, ease: 'easeOut' }}
-          className="grid px-6 py-4 items-center transition-colors duration-150"
-          style={{
-            gridTemplateColumns: '2fr repeat(5, 1fr) auto',
-            borderTop: '0.5px solid rgba(147,197,253,0.05)'
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.04)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-        >
-          {/* Persona */}
-          <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0"
-              style={{
-                background: 'rgba(59,130,246,0.1)',
-                color: '#93c5fd',
-                border: '0.5px solid rgba(147,197,253,0.15)'
+              return (
+                <motion.div
+                  key={persona.id}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05, duration: 0.3, ease: 'easeOut' }}
+                  className="grid px-6 py-4 items-center transition-colors duration-150"
+                  style={{
+                    gridTemplateColumns: '2fr 1.5fr 1.2fr 1fr 1.5fr',
+                    borderTop: '0.5px solid rgba(147,197,253,0.05)'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.04)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  {/* 1. Columna Persona */}
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0"
+                      style={{
+                        background: 'rgba(59,130,246,0.1)',
+                        color: '#93c5fd',
+                        border: '0.5px solid rgba(147,197,253,0.15)'
+                      }}
+                    >
+                      {persona.nombre[0]?.toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: '#e0f2fe' }}>
+                        {persona.nombre} {persona.apellido}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 2. Columna Asistencia (Martes) */}
+                  <div className="flex items-center justify-center">
+                    <CeldaDia registros={sinRegistro ? [] : asistencia.martes} />
+                  </div>
+
+                  {/* 3. Columna Monto Semana */}
+                  <div className="text-center text-sm font-medium" style={{ color: montoValido > 0 ? '#e0f2fe' : 'rgba(147,197,253,0.3)' }}>
+                    {montoValido > 0 ? `₡${montoValido.toLocaleString('es-CR')}` : '—'}
+                  </div>
+
+                  {/* 4. Columna Número de Recibo */}
+                  <div className="text-center text-sm" style={{ color: reciboValido !== '—' ? '#93c5fd' : 'rgba(147,197,253,0.3)' }}>
+                    {reciboValido !== '—' && !reciboValido.startsWith('Recibo') ? `#${reciboValido}` : reciboValido}
+                  </div>
+
+                  {/* 5. Columna Estado Semanal */}
+                  <div className="flex items-center justify-center">
+                    <span
+                      className="text-xs font-medium px-3 py-1 rounded-full tracking-wide min-w-[90px] text-center"
+                      style={{
+                        background: financialBadgeStyle.bg,
+                        color: financialBadgeStyle.color,
+                        border: `1px solid ${financialBadgeStyle.border}`
+                      }}
+                    >
+                      {estadoFinanciero === 'CANCELADO' ? 'Cancelado' : 'Pendiente'}
+                    </span>
+                  </div>
+
+                </motion.div>
+              );
+            })
+          )}
+        </AnimatePresence>
+        {/* 🌟 FOOTER CON BOTONERA DE PAGINACIÓN */}
+      {tabla.length > 0 && (
+        <div className="flex items-center justify-between px-6 py-4"
+          style={{ 
+            background: '#0f172a',
+            borderTop: '0.5px solid rgba(147,197,253,0.08)' 
+          }}>
+          
+          {/* Información de la fila */}
+          <span className="text-xs" style={{ color: 'rgba(147,197,253,0.4)' }}>
+            Mostrando <strong style={{ color: '#93c5fd' }}>{indiceInicial + 1}</strong> a <strong style={{ color: '#93c5fd' }}>{Math.min(indiceInicial + filasPorPagina, tabla.length)}</strong> de <strong style={{ color: '#93c5fd' }}>{tabla.length}</strong> asistencias
+          </span>
+
+          {/* Botones de control */}
+          <div className="flex items-center gap-2">
+            <motion.button
+              whileHover={paginaActual > 1 ? { x: -2 } : {}}
+              whileTap={paginaActual > 1 ? { scale: 0.95 } : {}}
+              onClick={paginaAnterior}
+              disabled={paginaActual === 1}
+              className="flex items-center justify-center p-2 rounded-xl text-xs font-medium border-none cursor-pointer transition-colors duration-150"
+              style={{ 
+                color: paginaActual === 1 ? 'rgba(147,197,253,0.2)' : 'rgba(147,197,253,0.6)', 
+                background: 'rgba(255,255,255,0.03)',
+                cursor: paginaActual === 1 ? 'not-allowed' : 'pointer'
               }}
             >
-              {persona.nombre[0]?.toUpperCase()}
-            </div>
-            <div>
-              <p className="text-sm font-medium" style={{ color: '#e0f2fe' }}>
-                {persona.nombre} {persona.apellido}
-              </p>
-              {persona.email && (
-                <p className="text-xs" style={{ color: 'rgba(147,197,253,0.35)' }}>
-                  {persona.email}
-                </p>
-              )}
-            </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </motion.button>
+
+            <span className="text-xs font-medium px-2" style={{ color: '#93c5fd' }}>
+              Página {paginaActual} de {totalPaginas || 1}
+            </span>
+
+            <motion.button
+              whileHover={paginaActual < totalPaginas ? { x: 2 } : {}}
+              whileTap={paginaActual < totalPaginas ? { scale: 0.95 } : {}}
+              onClick={paginaSiguiente}
+              disabled={paginaActual === totalPaginas || totalPaginas === 0}
+              className="flex items-center justify-center p-2 rounded-xl text-xs font-medium border-none cursor-pointer transition-colors duration-150"
+              style={{ 
+                color: (paginaActual === totalPaginas || totalPaginas === 0) ? 'rgba(147,197,253,0.2)' : 'rgba(147,197,253,0.6)', 
+                background: 'rgba(255,255,255,0.03)',
+                cursor: (paginaActual === totalPaginas || totalPaginas === 0) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </motion.button>
           </div>
-
-          {/* Celda por día — Pasamos la lista completa de ese día */}
-          {DIAS.map(dia => (
-            <div key={dia} className="flex items-center justify-center">
-              <CeldaDia registros={dias[dia] || []} />
-            </div>
-          ))}
-
-          {/* Badge total */}
-          <div className="flex items-center justify-center" style={{ minWidth: '64px' }}>
-            {totalSesiones === 0 ? (
-              <span className="text-xs" style={{ color: 'rgba(147,197,253,0.2)' }}>
-                —
-              </span>
-            ) : (
-              <span
-                className="text-xs font-medium px-2.5 py-1 rounded-lg"
-                style={{
-                  background: badgeStyle.bg,
-                  color:      badgeStyle.color,
-                  border:     `0.5px solid ${badgeStyle.border}`
-                }}
-              >
-                {totalPresentes}/{totalSesiones}
-              </span>
-            )}
-          </div>
-
-        </motion.div>
-      );
-    })
-  )}
-</AnimatePresence>
+        </div>
+      )}
 
         {/* Leyenda */}
         {tabla.length > 0 && (
@@ -352,14 +426,9 @@ const CeldaDia = ({ registros }) => {
                 bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)'
               },
               {
-                label: 'Ausente',
+                label: 'Ausente / Sin Registro',
                 icon: <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
                 bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.15)'
-              },
-              {
-                label: 'Sin sesión',
-                icon: <span style={{ color: 'rgba(147,197,253,0.15)', fontSize: '12px' }}>—</span>,
-                bg: 'transparent', border: 'transparent'
               }
             ].map(item => (
               <div key={item.label} className="flex items-center gap-2">

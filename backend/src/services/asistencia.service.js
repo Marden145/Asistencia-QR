@@ -1,7 +1,8 @@
 const { getWeek, getYear } = require('date-fns');
 const personaRepository    = require('../repositories/persona.repository');
 const asistenciaRepository = require('../repositories/asistencia.repository');
-
+const obtenerMesYSemanaDelMes = require('../helper/obtenerMesYSemanaDelMes');
+const pagoRepository = require('../repositories/pago.repository');
 const asistenciaService = {
 
   registrarPorQR: async (codigoQR) => {
@@ -71,21 +72,19 @@ const asistenciaService = {
     ? Math.round((presentes / totalPersonas) * 100)
     : 0;
 
-  // Agrupa asistencias por día de la semana
-  const porDia = [
-    'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'
-  ].map((dia, index) => {
-    const asistenciasDelDia = asistencias.filter(a => {
-      const fecha = new Date(a.fecha);
-      return fecha.getDay() === index + 1; // 1=Lunes, 2=Martes...
-    });
+  // Filtra y calcula las asistencias únicamente para el día Martes
+const asistenciasMartes = asistencias.filter(a => {
+  const fecha = new Date(a.fecha);
+  return fecha.getDay() === 2; // 2 = Martes
+});
 
-    return {
-      dia,
-      presentes: asistenciasDelDia.filter(a => a.estado === 'PRESENTE').length,
-      ausentes:  asistenciasDelDia.filter(a => a.estado === 'AUSENTE').length,
-    };
-  });
+const metricasMartes = {
+  dia: 'Martes',
+  presentes: asistenciasMartes.filter(a => a.estado === 'PRESENTE').length,
+  ausentes:  asistenciasMartes.filter(a => a.estado === 'AUSENTE').length,
+};
+
+const porDia = [metricasMartes];
 
   return {
     totalPersonas,
@@ -97,26 +96,32 @@ const asistenciaService = {
   };
 },
 tablaAsistencia: async (semana, año) => {
+  const { mes, semanaDelMes } = obtenerMesYSemanaDelMes(semana, año);
   const [todasPersonas, asistencias] = await Promise.all([
     personaRepository.findAll(),           // ← trae TODAS las personas
     asistenciaRepository.findBySemana(semana, año)
   ]);
 
-  return todasPersonas.map(persona => {
+  const filasTabla = await Promise.all(todasPersonas.map(async (persona) => {
     const asistenciasPersona = asistencias.filter(
       a => a.personaId === persona.id
     );
+    const pagoMensual = await pagoRepository.findByPersonaMesAño(persona.id, mes, año);
+    const campoSemana = `semana${semanaDelMes}`;
+    const montoSemana = pagoMensual ? (pagoMensual[campoSemana] || 0) : 0;
 
-    const dias = {
-  lunes:     asistenciasPersona.filter(a => new Date(a.fecha).getDay() === 1),
-  martes:    asistenciasPersona.filter(a => new Date(a.fecha).getDay() === 2),
-  miercoles: asistenciasPersona.filter(a => new Date(a.fecha).getDay() === 3),
-  jueves:    asistenciasPersona.filter(a => new Date(a.fecha).getDay() === 4),
-  viernes:   asistenciasPersona.filter(a => new Date(a.fecha).getDay() === 5),
+    const asistencia = {
+  martes:    asistenciasPersona.filter(a => new Date(a.fecha).getDay() === 2),//debe ser 2
 };
+const reporteFinanciero = {
+      monto: montoSemana,
+      recibo: pagoMensual ? (pagoMensual.recibo || '—') : '—',
+      estado: montoSemana > 0 ? 'CANCELADO' : 'PENDIENTE'
+    };
 
-    return { persona, dias };
-  });
+    return { persona, asistencia,reporteFinanciero };
+  }));
+  return filasTabla;
 }
 
 };

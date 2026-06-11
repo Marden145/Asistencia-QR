@@ -1,25 +1,30 @@
-import QRScanner from '../components/QR/QRScanner';
+import QRScanner     from '../components/QR/QRScanner';
 import SesionControl from '../components/Sesion/SesionControl';
-import { useState } from 'react';
+import { useState }  from 'react';
+import sesionService from '../services/sesion.service';
+
 const Escanear = () => {
   const [scannerHabilitado, setScannerHabilitado] = useState(false);
 
   const handleSesionCambia = (estaAbierta) => {
-    if (estaAbierta) {
-      // habilitar el scanner
-      setScannerHabilitado(true);
-    } else {
-      // deshabilitar el scanner — no tiene sentido escanear sin sesión
-      setScannerHabilitado(false);
-    }
+    setScannerHabilitado(estaAbierta);
   };
+
   return (
-     <div
+    <div
       className="min-h-screen p-8 flex flex-col items-center"
       style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)' }}
     >
       <SesionControl onSesionCambia={handleSesionCambia} />
-      {scannerHabilitado ? <QRScanner />: <p>Scanner deshabilitado</p> }
+
+      {scannerHabilitado
+        ? <QRScanner />
+        : (
+          <p className="text-sm mt-4" style={{ color: 'rgba(147,197,253,0.3)' }}>
+            Abre una sesión para habilitar el scanner
+          </p>
+        )
+      }
     </div>
   );
 };

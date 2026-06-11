@@ -4,7 +4,7 @@ const pagoController = {
 
   guardar: async (req, res, next) => {
     try {
-      const { personaId, mes, año, semana1, semana2, semana3, semana4, notas } = req.body;
+      const { personaId, mes, año, semana1, semana2, semana3, semana4,semana1MetodoPago, semana2MetodoPago, semana3MetodoPago, semana4MetodoPago, notas,recibo } = req.body;
 
       if (!personaId || !mes || !año) {
         return res.status(400).json({ error: 'personaId, mes y año son requeridos' });
@@ -12,7 +12,7 @@ const pagoController = {
 
       const pago = await pagoService.guardar(
         personaId, Number(mes), Number(año),
-        { semana1, semana2, semana3, semana4, notas }
+        { semana1, semana2, semana3, semana4, semana1MetodoPago, semana2MetodoPago, semana3MetodoPago, semana4MetodoPago, notas, recibo }
       );
 
       res.status(200).json(pago);

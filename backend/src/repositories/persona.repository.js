@@ -1,12 +1,28 @@
 const prisma = require('../prisma/client');
 
 const personaRepository = {
-
   // Trae todas las personas activas
-  findAll: () => prisma.persona.findMany({
-    where:   { activo: true },
-    orderBy: { createdAt: 'desc' }
-  }),
+findAll: (mes, año) => {
+  const añoActual = año || new Date().getFullYear();
+  return prisma.persona.findMany({
+    where: { activo: true },
+    orderBy: [
+      { nombre: 'asc' },
+      { apellido: 'asc' }
+    ],
+    include: {
+      pagos: {
+        where: {
+          mes: mes,
+          año: añoActual
+        },
+        select: {
+          total: true 
+        }
+      }
+    }
+  });
+},
 
   // Busca una persona por su id
   findById: (id) => prisma.persona.findUnique({

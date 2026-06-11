@@ -4,8 +4,12 @@ const personaRepository = require('../repositories/persona.repository');
 const personaService = {
 
   listar: async () => {
-    return personaRepository.findAll();
-  },
+  const hoy = new Date();
+  const mesActual = hoy.getMonth() + 1; 
+  const añoActual = hoy.getFullYear();
+
+  return personaRepository.findAll(mesActual, añoActual);
+},
 
   obtener: async (id) => {
     const persona = await personaRepository.findById(id);

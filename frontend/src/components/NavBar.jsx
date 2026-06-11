@@ -8,6 +8,7 @@ const LINKS = [
   { to: '/asistencia', label: 'Asistencia' },
   { to: '/dashboard',  label: 'Dashboard'  },
   { to: '/inventario',  label: 'Inventario'  },
+  { to: '/personas-junta-directiva',  label: 'Junta Directiva'  },
 ];
 
 const Navbar = () => {

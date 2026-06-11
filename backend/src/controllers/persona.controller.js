@@ -23,8 +23,9 @@ const personaController = {
 
   crear: async (req, res, next) => {
     try {
-      const { nombre, apellido, email, telefono } = req.body;
-      const persona = await personaService.crear({ nombre, apellido, email, telefono });
+      const { nombre, apellido,fechaNacimiento } = req.body;
+      const fechaDate = fechaNacimiento ? new Date(fechaNacimiento) : null;
+      const persona = await personaService.crear({ nombre, apellido, fechaNacimiento: fechaDate });
       res.status(201).json(persona);
     } catch (err) {
       next(err);
@@ -33,7 +34,9 @@ const personaController = {
 
   actualizar: async (req, res, next) => {
     try {
-      const persona = await personaService.actualizar(req.params.id, req.body);
+      const { nombre, apellido,fechaNacimiento } = req.body;
+      const fechaDate = fechaNacimiento ? new Date(fechaNacimiento) : null;
+      const persona = await personaService.actualizar(req.params.id, { nombre, apellido, fechaNacimiento: fechaDate });
       res.json(persona);
     } catch (err) {
       next(err);

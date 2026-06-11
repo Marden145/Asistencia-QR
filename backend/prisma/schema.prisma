@@ -22,13 +22,22 @@ model Persona {
   id          String  @id @default(uuid())
   nombre      String
   apellido    String
-  email       String?      @unique
-  telefono    String?
   codigoQR    String       @unique
   activo      Boolean      @default(true)
   createdAt   DateTime     @default(now())
+  fechaNacimiento DateTime
   asistencias Asistencia[]
   pagos Pago[]
+}
+model PersonaJuntaDirectiva {
+  id          String  @id @default(uuid())
+  nombre      String
+  apellido    String
+  cedula    String
+  telefono    String
+  puesto    String
+  activo      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
 }
 
 model Asistencia {
@@ -40,7 +49,7 @@ model Asistencia {
   año       Int
   dia       Int
   estado    Estado   
-  @@unique([personaId, dia, semana, año])
+  @@unique([personaId, dia, semana, año,estado])
 }
 
 enum Estado {
@@ -51,6 +60,10 @@ enum Estado {
 enum Role {
   ADMIN
   VIEWER
+}
+enum MetodoPago {
+  EFECTIVO
+  SINPE
 }
 model Sesion {
   id        String   @id @default(uuid())
@@ -92,7 +105,12 @@ model Pago {
   semana2    Float    @default(0)
   semana3    Float    @default(0)
   semana4    Float    @default(0)
+  semana1MetodoPago  MetodoPago  @default(EFECTIVO)
+  semana2MetodoPago  MetodoPago  @default(EFECTIVO)
+  semana3MetodoPago  MetodoPago  @default(EFECTIVO)
+  semana4MetodoPago  MetodoPago  @default(EFECTIVO)
   total      Float    @default(0)
+  recibo     String?
   notas      String?
   creadoAt   DateTime @default(now())
   actualizadoAt DateTime @updatedAt

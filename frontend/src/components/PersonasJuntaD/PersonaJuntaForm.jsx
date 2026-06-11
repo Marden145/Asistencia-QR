@@ -2,14 +2,14 @@ import { useEffect }               from 'react';
 import { useForm }                 from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const PersonaForm = ({ persona, onSubmit, onCancelar }) => {
+const PersonaJuntaForm = ({ persona, onSubmit, onCancelar }) => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   useEffect(() => {
     if (persona) {
       reset(persona);
     } else {
-      reset({ nombre: '', apellido: '', fechaNacimiento: '' });
+      reset({ nombre: '', apellido: '', cedula: '',telefono:'',puesto:'' });
     }
   }, [persona, reset]);
 
@@ -100,7 +100,10 @@ const PersonaForm = ({ persona, onSubmit, onCancelar }) => {
           <div className="grid grid-cols-2 gap-4">
             <Field label="Nombre"   name="nombre"   required placeholder="Juan" />
             <Field label="Apellido" name="apellido" required placeholder="Pérez" />
-            <Field label="Fecha de nacimiento" name="fechaNacimiento" type="date" required />
+            <Field label="Cédula" name="cedula" required placeholder="123456789" />
+            <Field label="Teléfono" name="telefono" required placeholder="8749-8514" />
+            <Field label="Puesto" name="puesto" required placeholder="Cargo" />
+            
           </div>
           
           {/* Botones */}
@@ -136,4 +139,4 @@ const PersonaForm = ({ persona, onSubmit, onCancelar }) => {
   );
 };
 
-export default PersonaForm;
+export default PersonaJuntaForm;

@@ -8,6 +8,7 @@ import Escanear        from './pages/Escanear';
 import Asistencia      from './pages/Asistencia';
 import Dashboard       from './pages/Dashboard';
 import Inventario      from './pages/Inventario';
+import PersonasJuntaDirectiva from './pages/PersonasJuntaDirectiva';
 import { SessionProvider }         from './context/SessionContext';
 import SessionExpiradaModal        from './components/SessionExpiradaModal';
 import { ToastProvider } from './context/ToastContext';
@@ -56,6 +57,12 @@ function App() {
             <PrivateRoute>
               <Navbar />
               <Inventario />
+            </PrivateRoute>
+          } />
+          <Route path="/personas-junta-directiva" element={
+            <PrivateRoute>
+              <Navbar />
+              <PersonasJuntaDirectiva />
             </PrivateRoute>
           } />
           

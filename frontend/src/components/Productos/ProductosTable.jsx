@@ -1,6 +1,25 @@
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { useState } from 'react';
 const ProductoTable = ({ productos, onEditar, onEliminar }) => {
+   // 🌟 ESTADOS DE PAGINACIÓN
+    const [paginaActual, setPaginaActual] = useState(1);
+    const filasPorPagina = 25; // Cambia este número para mostrar más o menos filas por página
+  
+    // 🌟 LÓGICA DE PROCESAMIENTO
+    const totalPaginas = Math.ceil(productos.length / filasPorPagina);
+    
+    // Obtener el índice inicial y final de los productos de la página activa
+    const indiceInicial = (paginaActual - 1) * filasPorPagina;
+    const productosPaginados = productos.slice(indiceInicial, indiceInicial + filasPorPagina);
+  
+    // Manejadores de navegación seguros
+    const paginaAnterior = () => {
+      if (paginaActual > 1) setPaginaActual(p => p - 1);
+    };
+  
+    const paginaSiguiente = () => {
+      if (paginaActual < totalPaginas) setPaginaActual(p => p + 1);
+    };
 return (
     <div className="rounded-2xl overflow-hidden"
       style={{ border: '0.5px solid rgba(147,197,253,0.12)' }}>
@@ -19,7 +38,7 @@ return (
       {/* Filas */}
       <div style={{ background: '#0b1120' }}>
         <AnimatePresence>
-          {productos.length === 0 ? (
+          {productosPaginados.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -36,7 +55,7 @@ return (
               </span>
             </motion.div>
           ) : (
-            productos.map((producto, i) => (
+            productosPaginados.map((producto, i) => (
               <motion.div
                 key={producto.id}
                 initial={{ opacity: 0, y: 8 }}
@@ -97,7 +116,7 @@ return (
                   <motion.button
                     whileHover={{ scale: 1.05, y: -1 }}
                     whileTap={{ scale: 0.96 }}
-                    onClick={() => onEliminar(producto.id)}
+                    onClick={() => onEliminar(producto)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border-none cursor-pointer"
                     style={{
                       background: 'rgba(239,68,68,0.08)',
@@ -123,6 +142,61 @@ return (
           )}
         </AnimatePresence>
       </div>
+      {/* 🌟 FOOTER CON BOTONERA DE PAGINACIÓN */}
+      {productos.length > 0 && (
+        <div className="flex items-center justify-between px-6 py-4"
+          style={{ 
+            background: '#0f172a',
+            borderTop: '0.5px solid rgba(147,197,253,0.08)' 
+          }}>
+          
+          {/* Información de la fila */}
+          <span className="text-xs" style={{ color: 'rgba(147,197,253,0.4)' }}>
+            Mostrando <strong style={{ color: '#93c5fd' }}>{indiceInicial + 1}</strong> a <strong style={{ color: '#93c5fd' }}>{Math.min(indiceInicial + filasPorPagina, productos.length)}</strong> de <strong style={{ color: '#93c5fd' }}>{productos.length}</strong> productos
+          </span>
+
+          {/* Botones de control */}
+          <div className="flex items-center gap-2">
+            <motion.button
+              whileHover={paginaActual > 1 ? { x: -2 } : {}}
+              whileTap={paginaActual > 1 ? { scale: 0.95 } : {}}
+              onClick={paginaAnterior}
+              disabled={paginaActual === 1}
+              className="flex items-center justify-center p-2 rounded-xl text-xs font-medium border-none cursor-pointer transition-colors duration-150"
+              style={{ 
+                color: paginaActual === 1 ? 'rgba(147,197,253,0.2)' : 'rgba(147,197,253,0.6)', 
+                background: 'rgba(255,255,255,0.03)',
+                cursor: paginaActual === 1 ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </motion.button>
+
+            <span className="text-xs font-medium px-2" style={{ color: '#93c5fd' }}>
+              Página {paginaActual} de {totalPaginas || 1}
+            </span>
+
+            <motion.button
+              whileHover={paginaActual < totalPaginas ? { x: 2 } : {}}
+              whileTap={paginaActual < totalPaginas ? { scale: 0.95 } : {}}
+              onClick={paginaSiguiente}
+              disabled={paginaActual === totalPaginas || totalPaginas === 0}
+              className="flex items-center justify-center p-2 rounded-xl text-xs font-medium border-none cursor-pointer transition-colors duration-150"
+              style={{ 
+                color: (paginaActual === totalPaginas || totalPaginas === 0) ? 'rgba(147,197,253,0.2)' : 'rgba(147,197,253,0.6)', 
+                background: 'rgba(255,255,255,0.03)',
+                cursor: (paginaActual === totalPaginas || totalPaginas === 0) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </motion.button>
+          </div>
+        </div>
+      )}
     </div>
   );
 

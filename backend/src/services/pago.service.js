@@ -3,7 +3,7 @@ const pagoRepository = require('../repositories/pago.repository');
 const pagoService = {
 
   guardar: async (personaId, mes, año, semanas) => {
-    const { semana1 = 0, semana2 = 0, semana3 = 0, semana4 = 0, notas } = semanas;
+    const { semana1 = 0, semana2 = 0, semana3 = 0, semana4 = 0,semana1MetodoPago, semana2MetodoPago, semana3MetodoPago, semana4MetodoPago, notas,recibo } = semanas;
 
     // Valida que los montos sean números positivos
     const montos = [semana1, semana2, semana3, semana4];
@@ -21,8 +21,13 @@ const pagoService = {
       semana2: Number(semana2),
       semana3: Number(semana3),
       semana4: Number(semana4),
+      semana1MetodoPago,
+      semana2MetodoPago,
+      semana3MetodoPago,
+      semana4MetodoPago,
       total,
-      notas
+      notas,
+      recibo
     });
   },
 
@@ -34,7 +39,9 @@ const pagoService = {
       personaId, mes, año,
       semana1: 0, semana2: 0,
       semana3: 0, semana4: 0,
-      total: 0, notas: ''
+      total: 0,
+      notas: '',
+      recibo:''
     };
   },
 

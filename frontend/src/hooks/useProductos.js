@@ -36,7 +36,7 @@ const useProductos = () =>{
   };
 
   const eliminar = async (id) => {
-    await productoService.remove(id);
+    await productoService.delete(id);
     await cargar();
   };
   const registrarEgresos = async (id,cantidad) => {

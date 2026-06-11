@@ -6,6 +6,8 @@ import ProductoForm      from '../components/Productos/ProductoForm';
 import MovimientoForm              from '../components/Productos/MovimientosForm'; 
 import HistorialMovimientos from '../components/movimientosInventario/HistorialMovimientos';
 import { useToastContext } from '../context/ToastContext';
+import  useConfirm  from '../hooks/useConfirm';
+import ConfirmModal from '../components/ConfirmModal';
 const Inventario = () =>{
     const { productos, loading, error, crear, actualizar, eliminar, cargar, registrarEgresos, registrarIngresos } = useProductos();
     const [productoEditando, setProductoEditando] = useState(null);
@@ -16,6 +18,7 @@ const Inventario = () =>{
     const [vistaActiva, setVistaActiva] = useState('productos');
 
     const toast = useToastContext();
+    const { isOpen, confirmData, abrirConfirmacion, cerrarConfirmacion } = useConfirm();
 
 
   const productosFiltrados = productos.filter(p => {
@@ -39,7 +42,6 @@ const Inventario = () =>{
   };
 
   const handleEliminar = async (id) => {
-    if (!window.confirm('¿Seguro que deseas eliminar este producto?')) return;
     try {
       await eliminar(id);
       toast.exito('Producto eliminado', `El producto ha sido eliminado correctamente.`);
@@ -265,7 +267,7 @@ const Inventario = () =>{
             <ProductosTable
               productos={productosFiltrados}
               onEditar={handleEditar}
-              onEliminar={handleEliminar}
+              onEliminar={abrirConfirmacion}
             />
           </motion.div>
         ) : (
@@ -305,6 +307,16 @@ const Inventario = () =>{
           />
         )}
       </AnimatePresence>
+      <ConfirmModal
+        isOpen={isOpen}
+        onClose={cerrarConfirmacion}
+        onConfirm={() => handleEliminar(confirmData.id)} // Pasa el ID guardado
+        titulo="¿Eliminar producto definitivamente?"
+        mensaje={`¿Estás seguro de que deseas eliminar el producto "${confirmData?.nombre}"? Esta acción no se puede deshacer y borrará su registro.`}
+        botonConfirmarText="Eliminar permanentemente"
+        botonConfirmarText="Eliminar producto"
+        tipo="error" // 'error' pinta el botón rojo, 'alerta' lo pinta amarillo
+      />
 
     </div>
   );

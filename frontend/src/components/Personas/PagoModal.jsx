@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence }          from 'framer-motion';
 import pagoService                          from '../../services/pago.service';
-
+import { useToastContext }                   from '../../context/ToastContext';
 const MESES = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
@@ -10,37 +10,100 @@ const inputMonto = `
     w-full text-sm outline-none px-4 py-3 rounded-xl
     transition-all duration-200
   `;
-const SemanaInput = ({ label, value, onChange }) => (
-    <div className="space-y-1.5">
+  
+// Reemplaza SemanaInput con este componente
+const SemanaInput = ({ label, value, onChange, metodoPago, onMetodoCambia }) => (
+  <div className="space-y-1.5">
+    <div className="flex items-center justify-between">
       <label className="block text-xs font-medium tracking-widest uppercase"
         style={{ color: 'rgba(147,197,253,0.45)' }}>
         {label}
       </label>
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium"
-          style={{ color: 'rgba(147,197,253,0.4)' }}>
-          ₡
-        </span>
-        <input
-          type="number"
-          min="0"
-          step="0.01"
-          placeholder="0.00"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          className={inputMonto}
+
+      {/* Toggle pill EFECTIVO / SINPE */}
+      <div className="flex items-center rounded-lg overflow-hidden"
+        style={{ border: '0.5px solid rgba(147,197,253,0.15)' }}>
+        <button
+          type="button"
+          onClick={() => onMetodoCambia('EFECTIVO')}
+          className="flex items-center gap-1 px-2 py-1 text-xs border-none cursor-pointer transition-all duration-150"
           style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '0.5px solid rgba(147,197,253,0.15)',
-            color: '#e0f2fe',
-            paddingLeft: '28px'
+            background: metodoPago === 'EFECTIVO'
+              ? 'rgba(34,197,94,0.15)'
+              : 'transparent',
+            color: metodoPago === 'EFECTIVO'
+              ? '#86efac'
+              : 'rgba(147,197,253,0.3)',
+            fontWeight: metodoPago === 'EFECTIVO' ? '600' : '400'
           }}
-          onFocus={e => e.target.style.borderColor = 'rgba(59,130,246,0.5)'}
-          onBlur={e  => e.target.style.borderColor = 'rgba(147,197,253,0.15)'}
-        />
+        >
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2">
+            <rect x="2" y="6" width="20" height="12" rx="2"/>
+            <circle cx="12" cy="12" r="2"/>
+          </svg>
+          Efectivo
+        </button>
+
+        <div style={{ width: '0.5px', background: 'rgba(147,197,253,0.12)', height: '20px' }} />
+
+        <button
+          type="button"
+          onClick={() => onMetodoCambia('SINPE')}
+          className="flex items-center gap-1 px-2 py-1 text-xs border-none cursor-pointer transition-all duration-150"
+          style={{
+            background: metodoPago === 'SINPE'
+              ? 'rgba(59,130,246,0.15)'
+              : 'transparent',
+            color: metodoPago === 'SINPE'
+              ? '#93c5fd'
+              : 'rgba(147,197,253,0.3)',
+            fontWeight: metodoPago === 'SINPE' ? '600' : '400'
+          }}
+        >
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2">
+            <rect x="5" y="2" width="14" height="20" rx="2"/>
+            <line x1="12" y1="18" x2="12" y2="18"/>
+          </svg>
+          SINPE
+        </button>
       </div>
     </div>
-  );
+
+    {/* Input del monto — igual que antes */}
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium"
+        style={{ color: 'rgba(147,197,253,0.4)' }}>
+        ₡
+      </span>
+      <input
+        type="number"
+        min="0"
+        step="0.01"
+        placeholder="0.00"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className={inputMonto}
+        style={{
+          background: 'rgba(255,255,255,0.04)',
+          border: `0.5px solid ${
+            metodoPago === 'SINPE'
+              ? 'rgba(59,130,246,0.25)'
+              : 'rgba(147,197,253,0.15)'
+          }`,
+          color: '#e0f2fe',
+          paddingLeft: '28px',
+          transition: 'border-color 0.2s'
+        }}
+        onFocus={e => e.target.style.borderColor = 'rgba(59,130,246,0.5)'}
+        onBlur={e  => e.target.style.borderColor = metodoPago === 'SINPE'
+          ? 'rgba(59,130,246,0.25)'
+          : 'rgba(147,197,253,0.15)'}
+      />
+    </div>
+  </div>
+);
 
 const PagoModal = ({ persona, onCerrar }) => {
   const hoy = new Date();
@@ -51,11 +114,18 @@ const PagoModal = ({ persona, onCerrar }) => {
   const [semana2,  setSemana2]  = useState('');
   const [semana3,  setSemana3]  = useState('');
   const [semana4,  setSemana4]  = useState('');
+  const [semana1Metodo, setSemana1Metodo] = useState('EFECTIVO');
+  const [semana2Metodo, setSemana2Metodo] = useState('EFECTIVO');
+  const [semana3Metodo, setSemana3Metodo] = useState('EFECTIVO');
+  const [semana4Metodo, setSemana4Metodo] = useState('EFECTIVO');
   const [notas,    setNotas]    = useState('');
+  const [recibo,   setRecibo]   = useState('');
   const [loading,  setLoading]  = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado] = useState(false);
   const [historial, setHistorial] = useState([]);
+
+  const toast = useToastContext();
 
   // Total calculado automáticamente con onChange
   const total = [semana1, semana2, semana3, semana4]
@@ -71,10 +141,16 @@ const PagoModal = ({ persona, onCerrar }) => {
       setSemana3(data.semana3 || '');
       setSemana4(data.semana4 || '');
       setNotas(data.notas   || '');
+      setRecibo(data.recibo || '');
+      setSemana1Metodo(data.semana1MetodoPago || 'EFECTIVO');
+      setSemana2Metodo(data.semana2MetodoPago || 'EFECTIVO');
+      setSemana3Metodo(data.semana3MetodoPago || 'EFECTIVO');
+      setSemana4Metodo(data.semana4MetodoPago || 'EFECTIVO');
     } catch {
       setSemana1(''); setSemana2('');
       setSemana3(''); setSemana4('');
       setNotas('');
+      setRecibo('');
     } finally {
       setLoading(false);
     }
@@ -101,13 +177,18 @@ const PagoModal = ({ persona, onCerrar }) => {
         semana2: parseFloat(semana2) || 0,
         semana3: parseFloat(semana3) || 0,
         semana4: parseFloat(semana4) || 0,
-        notas
+        semana1MetodoPago: semana1Metodo,
+        semana2MetodoPago: semana2Metodo,
+        semana3MetodoPago: semana3Metodo,
+        semana4MetodoPago: semana4Metodo,
+        notas,recibo
       });
       setGuardado(true);
       await cargarHistorial();
       setTimeout(() => setGuardado(false), 2500);
+      toast.exito('Pago guardado','El pago ha sido guardado exitosamente.');
     } catch (err) {
-      alert(err.response?.data?.error || 'Error al guardar');
+      toast.error('Error','Error al guardar el pago.');
     } finally {
       setGuardando(false);
     }
@@ -263,12 +344,37 @@ const PagoModal = ({ persona, onCerrar }) => {
                 transition={{ duration: 0.25 }}
                 className="space-y-4"
               >
-                <div className="grid grid-cols-2 gap-4">
-                  <SemanaInput label="Semana 1" value={semana1} onChange={setSemana1} />
-                  <SemanaInput label="Semana 2" value={semana2} onChange={setSemana2} />
-                  <SemanaInput label="Semana 3" value={semana3} onChange={setSemana3} />
-                  <SemanaInput label="Semana 4" value={semana4} onChange={setSemana4} />
+                {/* recibo */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium tracking-widest uppercase"
+                    style={{ color: 'rgba(147,197,253,0.45)' }}>
+                    Recibo
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Número de recibo..."
+                    value={recibo}
+                    onChange={e => setRecibo(e.target.value)}
+                    className="w-full text-sm outline-none px-4 py-3 rounded-xl"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '0.5px solid rgba(147,197,253,0.15)',
+                      color: '#e0f2fe'
+                    }}
+                    onFocus={e => e.target.style.borderColor = 'rgba(59,130,246,0.5)'}
+                    onBlur={e  => e.target.style.borderColor = 'rgba(147,197,253,0.15)'}
+                  />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+  <SemanaInput label="Semana 1" value={semana1} onChange={setSemana1}
+    metodoPago={semana1Metodo} onMetodoCambia={setSemana1Metodo} />
+  <SemanaInput label="Semana 2" value={semana2} onChange={setSemana2}
+    metodoPago={semana2Metodo} onMetodoCambia={setSemana2Metodo} />
+  <SemanaInput label="Semana 3" value={semana3} onChange={setSemana3}
+    metodoPago={semana3Metodo} onMetodoCambia={setSemana3Metodo} />
+  <SemanaInput label="Semana 4" value={semana4} onChange={setSemana4}
+    metodoPago={semana4Metodo} onMetodoCambia={setSemana4Metodo} />
+</div>
 
                 {/* Total — calculado en tiempo real */}
                 <div className="rounded-2xl p-4 mt-2"

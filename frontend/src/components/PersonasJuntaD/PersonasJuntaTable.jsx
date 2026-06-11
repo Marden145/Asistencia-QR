@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import calcularEdad from '../../utils/calcularEdad';
 
-const PersonaTable = ({ personas, onEditar, onEliminar, onVerQR, onVerPagos }) => {
+
+const PersonasJuntaTable = ({ personas, onEditar, onEliminar }) => {
   // 🌟 ESTADOS DE PAGINACIÓN
   const [paginaActual, setPaginaActual] = useState(1);
   const filasPorPagina = 25;
@@ -35,9 +35,9 @@ const PersonaTable = ({ personas, onEditar, onEliminar, onVerQR, onVerPagos }) =
             
             <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Nombre</span>
             <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Apellido</span>
-            <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Edad</span>
-            <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Código QR</span>
-            <span className="col-span-1 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Total Pagado</span>
+            <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Cédula</span>
+            <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Teléfono</span>
+            <span className="col-span-1 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Puesto</span>
             <span className="col-span-3 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Acciones</span>
           </div>
 
@@ -97,77 +97,23 @@ const PersonaTable = ({ personas, onEditar, onEliminar, onVerQR, onVerPagos }) =
                       {persona.apellido}
                     </span>
 
-                    {/* Edad (col-span-2) */}
+                    {/* Cédula (col-span-2) */}
                     <span className="text-sm col-span-2" style={{ color: '#e0f2fe' }}>
-                      {calcularEdad(persona.fechaNacimiento).edad} años {calcularEdad(persona.fechaNacimiento).esMayor65 && <span style={{ color: '#fcd34d' }}>(Adulto Mayor)</span>}
+                      {persona.cedula}
                     </span>
 
-                    {/* Código QR (col-span-2) */}
-                    <div className="flex items-center gap-2 col-span-2">
-                      <span className="text-xs font-mono px-2 py-1 rounded-lg"
-                        style={{
-                          background: 'rgba(99,102,241,0.1)',
-                          color: 'rgba(165,180,252,0.7)',
-                          border: '0.5px solid rgba(99,102,241,0.15)',
-                          letterSpacing: '0.05em'
-                        }}>
-                        {persona.codigoQR.substring(0, 8)}…
-                      </span>
-                    </div>
+                    {/* Teléfono (col-span-2) */}
+                    <span className="text-sm col-span-2" style={{ color: 'rgba(224,242,254,0.7)' }}>
+                      {persona.telefono}
+                    </span>
 
-                    {/* Total Pagado (col-span-1) */}
+                    {/* Puesto (col-span-1) */}
                     <span className="text-sm col-span-1" style={{ color: '#e0f2fe' }}>
-                      ₡{(persona.pagos[0]?.total ?? 0).toFixed(2)}
+                      {persona.puesto}
                     </span>
-
                     {/* Acciones (col-span-3 - Botones alineados horizontalmente de forma ejecutiva) */}
                     <div className="flex items-center gap-1.5 col-span-3">
-                      {/* Ver QR */}
-                      <motion.button
-                        whileHover={{ scale: 1.05, y: -1 }}
-                        whileTap={{ scale: 0.96 }}
-                        onClick={() => onVerQR(persona)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border-none cursor-pointer"
-                        style={{
-                          background: 'rgba(99,102,241,0.12)',
-                          color: '#a5b4fc',
-                          border: '0.5px solid rgba(99,102,241,0.2)'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.2)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.12)'}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="3" width="7" height="7"/>
-                          <rect x="14" y="3" width="7" height="7"/>
-                          <rect x="3" y="14" width="7" height="7"/>
-                          <rect x="14" y="14" width="7" height="7"/>
-                        </svg>
-                        QR
-                      </motion.button>
-
                       {/* Ver Pagos */}
-                      <motion.button
-                        whileHover={{ scale: 1.05, y: -1 }}
-                        whileTap={{ scale: 0.96 }}
-                        onClick={() => onVerPagos(persona)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border-none cursor-pointer"
-                        style={{
-                          background: 'rgba(251,191,36,0.08)',
-                          color: '#fcd34d',
-                          border: '0.5px solid rgba(251,191,36,0.18)'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(251,191,36,0.15)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(251,191,36,0.08)'}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" strokeWidth="2">
-                          <rect x="2" y="5" width="20" height="14" rx="2"/>
-                          <path d="M2 10h20"/>
-                        </svg>
-                        Pagos
-                      </motion.button>
-
                       {/* Editar */}
                       <motion.button
                         whileHover={{ scale: 1.05, y: -1 }}
@@ -282,4 +228,4 @@ const PersonaTable = ({ personas, onEditar, onEliminar, onVerQR, onVerPagos }) =
   );
 };
 
-export default PersonaTable;
+export default PersonasJuntaTable;

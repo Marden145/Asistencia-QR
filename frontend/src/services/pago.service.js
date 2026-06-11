@@ -17,7 +17,13 @@ const pagoService = {
   historial: async (personaId) => {
     const response = await api.get(`/pagos/${personaId}/historial`);
     return response.data;
-  }
+  },
+  reporteMensual: async (mes, año) => {
+  const response = await api.get('/pagos/reporte', {
+    params: { mes, año }
+  });
+  return response.data;
+}
 };
 
 export default pagoService;
