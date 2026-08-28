@@ -10,6 +10,8 @@ import pagoService from '../services/pago.service';
 import { generarPdfReporteMensual } from '../utils/pdfGenerator';
 import  useConfirm  from '../hooks/useConfirm';
 import ConfirmModal from '../components/ConfirmModal';
+
+
 const Personas = () => {
 
   const { personas, loading, error, crear, actualizar, eliminar } = usePersonas();
@@ -122,6 +124,8 @@ const handleVerPagos = (persona) => setPersonaPago(persona);
       {personasFiltradas.length} de {personas.length} registros
     </p>
   </div>
+
+
 
   {/* Barra de búsqueda */}
   <div className="relative flex-1 max-w-xs mx-6">

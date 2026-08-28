@@ -29,7 +29,11 @@ const pagoRepository = {
       where:   { mes, año },
       include: { persona: true },
       orderBy: { persona: { apellido: 'asc' } }
-    })
+    }),
+    // Obtiene el resumen de ingresos y estados de pago por semanas para el dashboard
+  obtenerResumenDashboard: (mes, año) =>
+    prisma.$queryRaw`SELECT * FROM obtener_resumen_dashboard(${mes}, ${año})`
+    
 };
 
 module.exports = pagoRepository;

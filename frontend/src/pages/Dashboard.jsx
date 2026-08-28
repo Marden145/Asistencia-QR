@@ -4,7 +4,8 @@ import useAsistencia        from '../hooks/useAsistencia';
 import StatCard             from '../components/Dashboard/StatCard';
 import AttendanceChart      from '../components/Dashboard/AttendanceChart';
 import DistribucionChart    from '../components/Dashboard/DistribucionChart';
-import WeeklyTable          from '../components/Dashboard/WeeklyTable';
+import IngresosSemanaChart from '../components/Dashboard/IngresosSemanaChart';
+import EstadoPagosChart     from '../components/Dashboard/EstadoPagosChart';
 
 const iconPresentes = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -40,7 +41,7 @@ const iconPorcentaje = (color) => (
 );
 
 const Dashboard = () => {
-  const { metricas, loading, error, semana, año, setSemana, setAño } = useAsistencia();
+  const { metricas, loading, error, semana, año, setSemana, setAño,resumenPagos } = useAsistencia();
 
   if (loading) {
     return (
@@ -158,7 +159,11 @@ const Dashboard = () => {
       </div>
 
       {/* Tabla semanal */}
-      <WeeklyTable asistencias={metricas.asistencias} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <IngresosSemanaChart data={resumenPagos} />
+      <EstadoPagosChart data={resumenPagos} />
+    </div>
+      
 
     </div>
   );

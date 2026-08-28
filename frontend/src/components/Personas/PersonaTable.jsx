@@ -30,16 +30,15 @@ const PersonaTable = ({ personas, onEditar, onEliminar, onVerQR, onVerPagos }) =
         <div className="min-w-[1000px] w-full">
           
           {/* Header de la tabla (Corregido a grid-cols-12 para cuadrar la matemática de spans) */}
-          <div className="grid grid-cols-12 px-6 py-3.5 items-center"
-            style={{ background: '#0f172a' }}>
-            
-            <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Nombre</span>
-            <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Apellido</span>
-            <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Edad</span>
-            <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Código QR</span>
-            <span className="col-span-1 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Total Pagado</span>
-            <span className="col-span-3 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Acciones</span>
-          </div>
+          <div className="grid grid-cols-12 px-6 py-3.5 items-center" style={{ background: '#0f172a' }}>
+  <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Nombre</span>
+  <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Apellido</span>
+  <span className="col-span-2 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>F. Nacimiento</span>
+  <span className="col-span-1 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Edad</span>
+  <span className="col-span-1 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>QR</span>
+  <span className="col-span-1 text-xs font-medium tracking-widest uppercase" style={{ color: 'rgba(147,197,253,0.45)' }}>Pagado</span>
+  <span className="col-span-3 text-xs font-medium tracking-widest uppercase text-center" style={{ color: 'rgba(147,197,253,0.45)' }}>Acciones</span>
+</div>
 
           {/* Filas */}
           <div style={{ background: '#0b1120' }}>
@@ -63,66 +62,65 @@ const PersonaTable = ({ personas, onEditar, onEliminar, onVerQR, onVerPagos }) =
                 </motion.div>
               ) : (
                 personasPaginadas.map((persona, i) => (
-                  <motion.div
-                    key={persona.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    transition={{ delay: i * 0.03, duration: 0.25, ease: 'easeOut' }}
-                    // 🌟 Alineado perfecto con grid-cols-12
-                    className="grid grid-cols-12 px-6 py-4 items-center group transition-colors duration-150"
-                    style={{
-                      borderTop: '0.5px solid rgba(147,197,253,0.06)',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.04)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  >
-                    {/* Nombre con avatar inicial (col-span-2) */}
-                    <div className="flex items-center gap-3 col-span-2">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-medium"
-                        style={{
-                          background: 'rgba(59,130,246,0.12)',
-                          color: '#93c5fd',
-                          border: '0.5px solid rgba(147,197,253,0.15)'
-                        }}>
-                        {persona.nombre[0]?.toUpperCase()}
-                      </div>
-                      <span className="text-sm font-medium" style={{ color: '#e0f2fe' }}>
-                        {persona.nombre}
-                      </span>
-                    </div>
+                 <motion.div
+  key={persona.id}
+  initial={{ opacity: 0, y: 8 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, x: -10 }}
+  transition={{ delay: i * 0.03, duration: 0.25, ease: 'easeOut' }}
+  className="grid grid-cols-12 px-6 py-4 items-center group transition-colors duration-150"
+  style={{
+    borderTop: '0.5px solid rgba(147,197,253,0.06)',
+  }}
+  onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.04)'}
+  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+>
+  {/* Nombre (col-span-2) */}
+  <div className="flex items-center gap-3 col-span-2">
+    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-medium"
+      style={{
+        background: 'rgba(59,130,246,0.12)',
+        color: '#93c5fd',
+        border: '0.5px solid rgba(147,197,253,0.15)'
+      }}>
+      {persona.nombre[0]?.toUpperCase()}
+    </div>
+    <span className="text-sm font-medium truncate" style={{ color: '#e0f2fe' }}>{persona.nombre}</span>
+  </div>
 
-                    {/* Apellido (col-span-2) */}
-                    <span className="text-sm col-span-2" style={{ color: 'rgba(224,242,254,0.7)' }}>
-                      {persona.apellido}
-                    </span>
+  {/* Apellido (col-span-2) */}
+  <span className="text-sm col-span-2 truncate" style={{ color: 'rgba(224,242,254,0.7)' }}>{persona.apellido}</span>
 
-                    {/* Edad (col-span-2) */}
-                    <span className="text-sm col-span-2" style={{ color: '#e0f2fe' }}>
-                      {calcularEdad(persona.fechaNacimiento).edad} años {calcularEdad(persona.fechaNacimiento).esMayor65 && <span style={{ color: '#fcd34d' }}>(Adulto Mayor)</span>}
-                    </span>
+  {/* Fecha de nacimiento (col-span-2) */}
+  <span className="text-sm col-span-2" style={{ color: 'rgba(224,242,254,0.7)' }}>
+    {new Date(persona.fechaNacimiento).toLocaleDateString()}
+  </span>
 
-                    {/* Código QR (col-span-2) */}
-                    <div className="flex items-center gap-2 col-span-2">
-                      <span className="text-xs font-mono px-2 py-1 rounded-lg"
-                        style={{
-                          background: 'rgba(99,102,241,0.1)',
-                          color: 'rgba(165,180,252,0.7)',
-                          border: '0.5px solid rgba(99,102,241,0.15)',
-                          letterSpacing: '0.05em'
-                        }}>
-                        {persona.codigoQR.substring(0, 8)}…
-                      </span>
-                    </div>
+  {/* Edad (col-span-1) */}
+  <span className="text-sm col-span-1" style={{ color: '#e0f2fe' }}>
+    {calcularEdad(persona.fechaNacimiento).edad} años {!calcularEdad(persona.fechaNacimiento).esMayor65 && <span style={{ color: '#fcd34d' }}>(Menor de 65 años)</span>}
+  </span>
 
-                    {/* Total Pagado (col-span-1) */}
-                    <span className="text-sm col-span-1" style={{ color: '#e0f2fe' }}>
-                      ₡{(persona.pagos[0]?.total ?? 0).toFixed(2)}
-                    </span>
+  {/* Código QR (col-span-1) */}
+  <div className="flex items-center col-span-1">
+    <span className="text-xs font-mono px-2 py-1 rounded-lg"
+      style={{
+        background: 'rgba(99,102,241,0.1)',
+        color: 'rgba(165,180,252,0.7)',
+        border: '0.5px solid rgba(99,102,241,0.15)'
+      }}>
+      {persona.codigoQR.substring(0, 4)}…
+    </span>
+  </div>
 
-                    {/* Acciones (col-span-3 - Botones alineados horizontalmente de forma ejecutiva) */}
-                    <div className="flex items-center gap-1.5 col-span-3">
-                      {/* Ver QR */}
+  {/* Total Pagado (col-span-1) */}
+  <span className="text-sm col-span-1" style={{ color: '#e0f2fe' }}>
+    ₡{(persona.pagos[0]?.total ?? 0).toFixed(0)}
+  </span>
+
+  {/* Acciones (col-span-3) */}
+  <div className="flex items-center justify-end gap-1.5 col-span-3">
+    {/* Ver QR */}
                       <motion.button
                         whileHover={{ scale: 1.05, y: -1 }}
                         whileTap={{ scale: 0.96 }}
@@ -213,8 +211,8 @@ const PersonaTable = ({ personas, onEditar, onEliminar, onVerQR, onVerPagos }) =
                         </svg>
                         Eliminar
                       </motion.button>
-                    </div>
-                  </motion.div>
+  </div>
+</motion.div>
                 ))
               )}
             </AnimatePresence>

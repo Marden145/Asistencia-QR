@@ -48,18 +48,16 @@ const sesionService = {
     const dia = hoy.getDate();
 
     if (ausentes.length > 0) {
-      await Promise.all(
-        ausentes.map(persona =>
-          asistenciaRepository.create({
-            personaId: persona.id,
-            semana:    sesion.semana,
-            año:       sesion.año,
-            dia,
-            estado:    'AUSENTE'
-          })
-        )
-      );
-    }
+  await asistenciaRepository.createMany(
+    ausentes.map(persona => ({
+      personaId: persona.id,
+      semana:    sesion.semana,
+      año:       sesion.año,
+      dia,
+      estado:    'AUSENTE'
+    }))
+  );
+}
 
     // Cierra la sesión
     const sesionCerrada = await sesionRepository.cerrar(sesion.id);

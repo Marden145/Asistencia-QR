@@ -8,5 +8,6 @@ router.post('/',                           ctrl.guardar);
 router.get('/reporte',                     ctrl.reporteMensual);
 router.get('/:personaId/mes',              ctrl.obtenerPorMes);
 router.get('/:personaId/historial',        ctrl.historial);
+router.get('/resumen-dashboard',           ctrl.obtenerResumenDashboard);
 
 module.exports = router;

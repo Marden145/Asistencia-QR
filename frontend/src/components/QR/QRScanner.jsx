@@ -12,95 +12,141 @@ const QRScanner = () => {
   const [activo,     setActivo]     = useState(false);
 
   const scannerRef    = useRef(null);
-  const iniciandoRef  = useRef(false);
-  const procesandoRef = useRef(false); // ← lock anti-duplicados
+  const procesandoRef = useRef(false);
+  const montadoRef    = useRef(true);
+
+  const limpiarScanner = async () => {
+    if (!scannerRef.current) return;
+
+    const scanner = scannerRef.current;
+    scannerRef.current = null;
+
+    try {
+      const estado = scanner.getState();
+      if (estado === 2 || estado === 3) {
+        await scanner.stop();
+      }
+    } catch (err) {
+      console.warn('Scanner ya estaba detenido o interrumpido:', err.message);
+    }
+
+    try { scanner.clear(); } catch {}
+
+    const div = document.getElementById('qr-reader');
+    if (div) div.replaceChildren();
+  };
 
   useEffect(() => {
+    montadoRef.current = true;
+
     Html5Qrcode.getCameras()
       .then(devices => {
+        if (!montadoRef.current) return;
         if (devices?.length) {
           setCamaras(devices);
           setCamaraId(devices[0].id);
         }
       })
       .catch(() => {});
+
+    return () => {
+      montadoRef.current = false;
+    };
   }, []);
 
   useEffect(() => {
     if (!camaraId) return;
-    if (iniciandoRef.current) return;
-    iniciandoRef.current = true;
 
-    const scanner = new Html5Qrcode('qr-reader');
-    scannerRef.current = scanner;
+    let cancelado = false;
 
-    scanner.start(
-      camaraId,
-      { fps: 10, qrbox: { width: 220, height: 220 } },
+    const iniciar = async () => {
+      await limpiarScanner();
+      if (cancelado) return;
 
-      async (codigoQR) => {
-        // Lock síncrono — bloquea todos los frames siguientes
-        if (procesandoRef.current) return;
-        procesandoRef.current = true;
+      procesandoRef.current = false;
 
-        setEscaneando(true);
-        setError(null);
+      const scanner = new Html5Qrcode('qr-reader');
+      scannerRef.current = scanner;
 
-        try {
-          const data = await asistenciaService.registrarPorQR(codigoQR);
-          setResultado(data);
-        } catch (err) {
-          setError(err.response?.data?.error || 'Error al registrar');
-        } finally {
-          setEscaneando(false);
-          setTimeout(() => {
-            setResultado(null);
+      try {
+        await scanner.start(
+          camaraId,
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+
+          async (codigoQR) => {
+            if (cancelado || !montadoRef.current) return;
+            if (procesandoRef.current) return;
+            procesandoRef.current = true;
+
+            setEscaneando(true);
             setError(null);
-            procesandoRef.current = false; // libera el lock
-          }, 3500);
+
+            try {
+              const data = await asistenciaService.registrarPorQR(codigoQR);
+              if (montadoRef.current) setResultado(data);
+            } catch (err) {
+              if (montadoRef.current) {
+                setError(err.response?.data?.error || 'Error al registrar');
+              }
+            } finally {
+              if (montadoRef.current) setEscaneando(false);
+              setTimeout(() => {
+                if (montadoRef.current) {
+                  setResultado(null);
+                  setError(null);
+                }
+                procesandoRef.current = false;
+              }, 3500);
+            }
+          },
+
+          () => {}
+        );
+
+        // El efecto pudo cancelarse MIENTRAS start() corría — verifica de nuevo
+        if (cancelado) {
+          try {
+            const estado = scanner.getState();
+            if (estado === 2 || estado === 3) await scanner.stop();
+            scanner.clear();
+          } catch {}
+          const div = document.getElementById('qr-reader');
+          if (div) div.replaceChildren();
+          return;
         }
-      },
 
-      () => {}
-    )
-    .then(() => setActivo(true))
-    .catch(() => { iniciandoRef.current = false; });
+        if (montadoRef.current) setActivo(true);
 
-    return () => {
-      iniciandoRef.current  = false;
-      procesandoRef.current = false; // limpia el lock al desmontar
-      setActivo(false);
-
-      if (scannerRef.current) {
-        scannerRef.current
-          .stop()
-          .then(() => scannerRef.current?.clear())
-          .catch(() => {});
-        scannerRef.current = null;
+      } catch (err) {
+        if (!cancelado) {
+          scannerRef.current = null;
+          const div = document.getElementById('qr-reader');
+          if (div) div.replaceChildren();
+        }
+        console.warn('No se pudo iniciar el scanner:', err.message);
       }
     };
-  }, [camaraId]);
+
+    iniciar();
+
+    return () => {
+      cancelado = true;
+      procesandoRef.current = false;
+      if (montadoRef.current) setActivo(false);
+      limpiarScanner();
+    };
+  }, [camaraId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cambiarCamara = async (nuevoCamaraId) => {
-    if (!scannerRef.current) return;
-
     setActivo(false);
-    iniciandoRef.current  = false;
-    procesandoRef.current = false; // resetea lock al cambiar cámara
-
-    try {
-      await scannerRef.current.stop();
-      scannerRef.current.clear();
-    } catch {}
-
-    scannerRef.current = null;
+    procesandoRef.current = false;
+    await limpiarScanner();
     setCamaraId(nuevoCamaraId);
   };
 
-  // El return es exactamente igual — no cambia nada visual
   return (
     <div
-      className="min-h-screen p-8 flex flex-col items-center"
+      className="min-h-screen p-4 md:p-8 flex flex-col items-center"
       style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)' }}
     >
       <motion.div

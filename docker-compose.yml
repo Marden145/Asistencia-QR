@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: centro-diurno-backend
+    restart: unless-stopped         # reinicio automático si se cae
+    env_file:
+      - ./backend/.env
+    expose:
+      - "3001"                      # NO usa "ports" — no expuesto al host directamente
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    # Seguridad adicional a nivel de contenedor
+    security_opt:
+      - no-new-privileges:true
+    read_only: false                # Prisma necesita escribir cache, déjalo false
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    container_name: centro-diurno-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"     
+      - "443:443"   
+    volumes:
+    - ./nginx/certs:/etc/nginx/certs:ro             # único puerto expuesto al exterior
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - app-network
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+networks:
+  app-network:
+    driver: bridge

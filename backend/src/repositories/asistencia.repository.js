@@ -3,6 +3,12 @@ const prisma = require('../prisma/client');
 const asistenciaRepository = {
 
   // Crea un registro de asistencia
+  createMany: (registros) =>
+    prisma.asistencia.createMany({
+      data: registros,
+      skipDuplicates: true
+    }),
+    // Crea un registro de asistencia
   create: (data) => prisma.asistencia.create({
     data,
     include: { persona: true } // devuelve también los datos de la persona

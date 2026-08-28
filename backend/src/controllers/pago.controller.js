@@ -44,6 +44,13 @@ const pagoController = {
       const pagos = await pagoService.reporteMensual(Number(mes), Number(año));
       res.json(pagos);
     } catch (err) { next(err); }
+  },
+  obtenerResumenDashboard: async (req, res, next) => {
+    try {
+      const { mes, año } = req.query;
+      const resumen = await pagoService.obtenerResumenDashboard(Number(mes), Number(año));
+      res.json(resumen);
+    } catch (err) { next(err); }
   }
 };
 

@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute    from './components/PrivateRoute';
-import Navbar          from './components/Navbar';
+import Navbar          from './components/NavBar';
 import Login           from './pages/Login';
 import Personas        from './pages/Personas';
 import Escanear        from './pages/Escanear';
@@ -14,6 +14,7 @@ import SessionExpiradaModal        from './components/SessionExpiradaModal';
 import { ToastProvider } from './context/ToastContext';
 function App() {
   return (
+    <div className="overflow-x-hidden max-w-[100vw]">
   <SessionProvider>
     <AuthProvider>
       <ToastProvider>
@@ -75,7 +76,7 @@ function App() {
       </ToastProvider>
     </AuthProvider>
   </SessionProvider>
-    
+    </div>
   );
 }
 

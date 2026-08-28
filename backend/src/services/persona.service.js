@@ -31,7 +31,6 @@ const personaService = {
 
     return personaRepository.create({ ...data, codigoQR });
   },
-
   actualizar: async (id, data) => {
     // Primero verifica que existe (reutiliza la lógica de obtener)
     await personaService.obtener(id);

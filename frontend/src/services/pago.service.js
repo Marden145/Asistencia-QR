@@ -23,7 +23,14 @@ const pagoService = {
     params: { mes, año }
   });
   return response.data;
-}
+},
+  obtenerResumenDashboard: async (mes, año) => {
+    const response = await api.get('/pagos/resumen-dashboard', {
+      params: { mes, año }
+    });
+    return response.data;
+  }
+
 };
 
 export default pagoService;

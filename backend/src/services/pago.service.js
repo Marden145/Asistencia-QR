@@ -51,6 +51,9 @@ const pagoService = {
 
   reporteMensual: async (mes, año) => {
     return pagoRepository.findByMesAño(mes, año);
+  },
+  obtenerResumenDashboard: async (mes, año) => {
+    return pagoRepository.obtenerResumenDashboard(mes, año);
   }
 };
 

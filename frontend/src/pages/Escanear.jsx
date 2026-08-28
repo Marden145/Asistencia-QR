@@ -11,22 +11,22 @@ const Escanear = () => {
   };
 
   return (
-    <div
-      className="min-h-screen p-8 flex flex-col items-center"
-      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)' }}
-    >
-      <SesionControl onSesionCambia={handleSesionCambia} />
+  <div
+    className="min-h-screen p-4 md:p-8 flex flex-col items-center"
+    style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)' }}
+  >
+    <SesionControl onSesionCambia={handleSesionCambia} />
 
-      {scannerHabilitado
-        ? <QRScanner />
-        : (
-          <p className="text-sm mt-4" style={{ color: 'rgba(147,197,253,0.3)' }}>
-            Abre una sesión para habilitar el scanner
-          </p>
-        )
-      }
-    </div>
-  );
+    {scannerHabilitado
+      ? <QRScanner />
+      : (
+        <p className="text-sm mt-4 text-center px-4" style={{ color: 'rgba(147,197,253,0.3)' }}>
+          Abre una sesión para habilitar el scanner
+        </p>
+      )
+    }
+  </div>
+);
 };
 
 export default Escanear;

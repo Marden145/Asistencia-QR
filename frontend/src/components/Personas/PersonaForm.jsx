@@ -7,8 +7,13 @@ const PersonaForm = ({ persona, onSubmit, onCancelar }) => {
 
   useEffect(() => {
     if (persona) {
-      reset(persona);
-    } else {
+    reset({
+      ...persona,
+      fechaNacimiento: persona.fechaNacimiento 
+        ? new Date(persona.fechaNacimiento).toISOString().split('T')[0] 
+        : ''
+    });
+  } else {
       reset({ nombre: '', apellido: '', fechaNacimiento: '' });
     }
   }, [persona, reset]);
