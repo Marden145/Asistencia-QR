@@ -1,0 +1,6 @@
+1. Create the test for the most important APIs
+2. Research how to do the test, and the bd test, without expose anything
+3. Create a CI github action, more basic, but it's for check out the tests 
+4. Create a action in Dev, for do a pull request to main
+5.Research for the packagues in github and use them for mi local docker
+6. Do the final CI/CD with test and most thing and the deployt in docker.
