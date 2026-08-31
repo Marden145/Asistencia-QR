@@ -1,8 +1,26 @@
 const request = require('supertest');
 const app = require('../app');
+const prisma = require('../prisma/client');
+const bcrypt = require('bcryptjs');
 let token;
 
 beforeAll(async () => {
+  const hashedPassword = await bcrypt.hash('password123', 10);
+  await prisma.user.upsert({
+    where: {
+      email: 'admin@test.com'
+    },
+    update: {
+      password: hashedPassword,
+      role: 'ADMIN'
+    },
+    create: {
+      email: 'admin@test.com',
+      password: hashedPassword,
+      role: 'ADMIN'
+    }
+  });
+  
   const res = await request(app)
     .post('/api/auth/login')
     .send({ email: 'admin@test.com', password: 'password123' });

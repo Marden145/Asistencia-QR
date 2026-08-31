@@ -1,12 +1,28 @@
 // tests/asistencia.test.js
 const request = require('supertest');
 const app     = require('../app');
-
+const prisma = require('../prisma/client');
+const bcrypt = require('bcryptjs');
 let token;
 let personaId;
 let codigoQR;
 
 beforeAll(async () => {
+  const hashedPassword = await bcrypt.hash('password123', 10);
+  await prisma.user.upsert({
+    where: {
+      email: 'admin@test.com'
+    },
+    update: {
+      password: hashedPassword,
+      role: 'ADMIN'
+    },
+    create: {
+      email: 'admin@test.com',
+      password: hashedPassword,
+      role: 'ADMIN'
+    }
+  });
   // Login
   const loginRes = await request(app)
     .post('/api/auth/login')
@@ -48,7 +64,7 @@ describe('Registro de asistencia por QR', () => {
 
   test('registra presente con QR válido', async () => {
     const res = await request(app)
-      .post('/api/asistencia/registrar-qr')
+      .post('/api/asistencia/registrar')
       .set('Authorization', `Bearer ${token}`)
       .send({ codigoQR });
 
@@ -59,7 +75,7 @@ describe('Registro de asistencia por QR', () => {
 
   test('no permite registrar la misma persona dos veces el mismo día', async () => {
     const res = await request(app)
-      .post('/api/asistencia/registrar-qr')
+      .post('/api/asistencia/registrar')
       .set('Authorization', `Bearer ${token}`)
       .send({ codigoQR });
 
@@ -68,7 +84,7 @@ describe('Registro de asistencia por QR', () => {
 
   test('rechaza QR inexistente', async () => {
     const res = await request(app)
-      .post('/api/asistencia/registrar-qr')
+      .post('/api/asistencia/registrar')
       .set('Authorization', `Bearer ${token}`)
       .send({ codigoQR: 'qr-que-no-existe-en-la-bd' });
 

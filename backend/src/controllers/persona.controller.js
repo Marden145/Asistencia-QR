@@ -24,6 +24,11 @@ const personaController = {
   crear: async (req, res, next) => {
     try {
       const { nombre, apellido,fechaNacimiento } = req.body;
+       if (!nombre || !apellido) {
+        return res.status(400).json({
+          error: 'Nombre y apellido son requeridos'
+        });
+      }
       const fechaDate = fechaNacimiento ? new Date(fechaNacimiento) : null;
       const persona = await personaService.crear({ nombre, apellido, fechaNacimiento: fechaDate });
       res.status(201).json(persona);

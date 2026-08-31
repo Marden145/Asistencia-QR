@@ -48,7 +48,7 @@ const asistenciaService = {
     return {
       mensaje:    `✅ ${persona.nombre} ${persona.apellido} registrado como PRESENTE`,
       persona:    { id: persona.id, nombre: persona.nombre, apellido: persona.apellido },
-      asistencia: { id: asistencia.id, fecha: asistencia.fecha, semana, año }
+      asistencia: { id: asistencia.id, fecha: asistencia.fecha, semana, año,estado: asistencia.estado }
     };
   },
 
