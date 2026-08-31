@@ -46,6 +46,9 @@ describe('Sesión de asistencia', () => {
       .post('/api/sesion/abrir')
       .set('Authorization', `Bearer ${token}`);
 
+       console.log('STATUS:', res.statusCode);
+  console.log('BODY:', res.body);
+
     expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty('id');
     expect(res.body.abierta).toBe(true);
