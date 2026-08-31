@@ -1,5 +1,18 @@
 const request = require('supertest');
 const app = require('../src/app');
+
+beforeAll(async () => {
+
+  await prisma.user.create({
+            data: {
+                email: 'admin@test.com',
+                password: 'password123',
+                role: 'ADMIN'
+            }
+        });
+});
+
+
 describe('POST /api/auth/login', () => {
     test('login exitoso con credenciales validas',async()=>{
         const res=await request(app)

@@ -7,6 +7,16 @@ beforeAll(async () => {
     .post('/api/auth/login')
     .send({ email: 'admin@test.com', password: 'password123' });
   token = res.body.token;
+
+   await request(app)
+      .post('/api/personas')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        nombre:          'Persona Prueba',
+        apellido:        'Apellido Moraga',
+        fechaNacimiento: '1950-01-01'
+      });
+
 });
 
 describe('GET /api/personas', () => {
