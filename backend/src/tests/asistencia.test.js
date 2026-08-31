@@ -1,6 +1,6 @@
 // tests/asistencia.test.js
 const request = require('supertest');
-const app     = require('../src/app');
+const app     = require('../app');
 
 let token;
 let personaId;
