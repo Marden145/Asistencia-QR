@@ -16,29 +16,33 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-CREATE TABLE "Persona" (
-    "id" TEXT NOT NULL,
-    "nombre" TEXT NOT NULL,
-    "apellido" TEXT NOT NULL,
-    "email" TEXT,
-    "telefono" TEXT,
-    "codigoQR" TEXT NOT NULL,
-    "activo" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Persona_pkey" PRIMARY KEY ("id")
+create table public."Persona" (
+  id text not null,
+  nombre text not null,
+  apellido text not null,
+  "codigoQR" text not null,
+  activo boolean not null default true,
+  "createdAt" timestamp without time zone not null default CURRENT_TIMESTAMP,
+  "fechaNacimiento" timestamp with time zone not null,
+  constraint Persona_pkey primary key (id)
 );
 
--- CreateTable
-CREATE TABLE "Asistencia" (
-    "id" TEXT NOT NULL,
-    "personaId" TEXT NOT NULL,
-    "fecha" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "semana" INTEGER NOT NULL,
-    "año" INTEGER NOT NULL,
-    "estado" "Estado" NOT NULL,
 
-    CONSTRAINT "Asistencia_pkey" PRIMARY KEY ("id")
+
+
+
+-- CreateTable
+create table public."Asistencia" (
+  id text not null,
+  "personaId" text not null,
+  fecha timestamp without time zone not null default CURRENT_TIMESTAMP,
+  semana integer not null,
+  año integer not null,
+  estado public.Estado not null,
+  dia integer null,
+  constraint Asistencia_pkey primary key (id),
+  constraint asistencia_persona_dia_semana_anio_estado_unique unique ("personaId", dia, semana, "año", estado),
+  constraint Asistencia_personaId_fkey foreign KEY ("personaId") references "Persona" (id) on update CASCADE on delete RESTRICT
 );
 
 -- CreateIndex
@@ -48,7 +52,7 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "Persona_email_key" ON "Persona"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Persona_codigoQR_key" ON "Persona"("codigoQR");
+create unique INDEX IF not exists "Persona_codigoQR_key" on public."Persona" using btree ("codigoQR");
 
 -- AddForeignKey
 ALTER TABLE "Asistencia" ADD CONSTRAINT "Asistencia_personaId_fkey" FOREIGN KEY ("personaId") REFERENCES "Persona"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
