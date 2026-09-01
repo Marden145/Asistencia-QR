@@ -17,11 +17,11 @@ CREATE TABLE "User" (
 
 -- CreateTable
 create table public."Persona" (
-  id text not null,
-  nombre text not null,
-  apellido text not null,
+  "id" text not null,
+  "nombre" text not null,
+  "apellido" text not null,
   "codigoQR" text not null,
-  activo boolean not null default true,
+  "activo" boolean not null default true,
   "createdAt" timestamp without time zone not null default CURRENT_TIMESTAMP,
   "fechaNacimiento" timestamp with time zone not null,
   constraint Persona_pkey primary key (id)
@@ -33,15 +33,15 @@ create table public."Persona" (
 
 -- CreateTable
 create table public."Asistencia" (
-  id text not null,
+  "id" text not null,
   "personaId" text not null,
-  fecha timestamp without time zone not null default CURRENT_TIMESTAMP,
-  semana integer not null,
-  año integer not null,
-  estado public.Estado not null,
-  dia integer null,
+  "fecha" timestamp without time zone not null default CURRENT_TIMESTAMP,
+  "semana" integer not null,
+  "año" integer not null,
+  "estado" "Estado" not null,
+  "dia" integer null,
   constraint Asistencia_pkey primary key (id),
-  constraint asistencia_persona_dia_semana_anio_estado_unique unique ("personaId", dia, semana, "año", estado),
+  constraint asistencia_persona_dia_semana_anio_estado_unique unique ("personaId", "dia", "semana", "año", "estado"),
   constraint Asistencia_personaId_fkey foreign KEY ("personaId") references "Persona" (id) on update CASCADE on delete RESTRICT
 );
 
