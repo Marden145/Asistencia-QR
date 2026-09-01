@@ -15,7 +15,8 @@ const asistenciaController = {
       const resultado = await asistenciaService.registrarPorQR(codigoQR);
       res.status(201).json(resultado);
     } catch (err) {
-      next(err);
+    console.error('🔥 ERROR ASISTENCIA:', err);
+    next(err);
     }
   },
 
@@ -29,6 +30,7 @@ const asistenciaController = {
       const reporte = await asistenciaService.reporteSemanal(semana, año);
       res.json(reporte);
     } catch (err) {
+      console.error('🔥 ERROR ASISTENCIA:', err);
       next(err);
     }
   },
@@ -41,6 +43,7 @@ const asistenciaController = {
     const data = await asistenciaService.metricas(semana, año);
     res.json(data);
   } catch (err) {
+    console.error('🔥 ERROR ASISTENCIA:', err);
     next(err);
   }
 },
@@ -53,6 +56,7 @@ tablaAsistencia: async (req, res, next) => {
     const tabla = await asistenciaService.tablaAsistencia(semana, año);
     res.json({ tabla, semana, año });
   } catch (err) {
+    console.error('🔥 ERROR ASISTENCIA:', err);
     next(err);
   }
 }

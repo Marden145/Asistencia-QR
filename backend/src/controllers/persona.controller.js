@@ -7,6 +7,7 @@ const personaController = {
       const personas = await personaService.listar();
       res.json(personas);
     } catch (err) {
+      console.error('🔥 ERROR PERSONA:', err);
       next(err);
     }
   },
@@ -17,6 +18,7 @@ const personaController = {
       const persona = await personaService.obtener(req.params.id);
       res.json(persona);
     } catch (err) {
+      console.error('🔥 ERROR PERSONA:', err);
       next(err);
     }
   },
@@ -33,6 +35,7 @@ const personaController = {
       const persona = await personaService.crear({ nombre, apellido, fechaNacimiento: fechaDate });
       res.status(201).json(persona);
     } catch (err) {
+      console.error('🔥 ERROR PERSONA:', err);
       next(err);
     }
   },
@@ -44,6 +47,7 @@ const personaController = {
       const persona = await personaService.actualizar(req.params.id, { nombre, apellido, fechaNacimiento: fechaDate });
       res.json(persona);
     } catch (err) {
+      console.error('🔥 ERROR PERSONA:', err);
       next(err);
     }
   },
@@ -53,6 +57,7 @@ const personaController = {
       await personaService.eliminar(req.params.id);
       res.json({ mensaje: 'Persona eliminada correctamente' });
     } catch (err) {
+      console.error('🔥 ERROR PERSONA:', err);
       next(err);
     }
   }
