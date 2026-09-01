@@ -6,21 +6,28 @@ const sesionController = {
     try {
       const sesion = await sesionService.abrir();
       res.status(201).json(sesion);
-    } catch (err) { next(err); }
+    } catch (err) { 
+      console.error('🔥 ERROR ASISTENCIA:', err);
+      next(err); 
+    }
   },
 
   cerrar: async (req, res, next) => {
     try {
       const resultado = await sesionService.cerrar();
       res.json(resultado);
-    } catch (err) { next(err); }
+    } catch (err) {
+      console.error('🔥 ERROR ASISTENCIA:', err);
+      next(err); }
   },
 
   estado: async (req, res, next) => {
     try {
       const estado = await sesionService.estadoHoy();
       res.json(estado);
-    } catch (err) { next(err); }
+    } catch (err) {
+      console.error('🔥 ERROR ASISTENCIA:', err);
+      next(err); }
   }
 };
 
