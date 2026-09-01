@@ -47,12 +47,6 @@ create table public."Asistencia" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Persona_email_key" ON "Persona"("email");
-
 -- CreateIndex
 create unique INDEX IF not exists "Persona_codigoQR_key" on public."Persona" using btree ("codigoQR");
 
--- AddForeignKey
-ALTER TABLE "Asistencia" ADD CONSTRAINT "Asistencia_personaId_fkey" FOREIGN KEY ("personaId") REFERENCES "Persona"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
